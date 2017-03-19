@@ -12,7 +12,7 @@
 plot_fun <- function (scenario, diff = TRUE) {
     require("lattice")
     nam <- paste0("combinedResults", scenario, ".RData")
-    con_text <- paste0("https://raw.github.com/drizopoulos/lm_and_jm/master/Simulation/",
+    con_text <- paste0("https://raw.github.com/drizopoulos/jm_and_lm/master/Simulation/",
                        nam)
     con <- url(con_text)
     load(con)
