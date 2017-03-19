@@ -10,6 +10,7 @@
 
 
 library("parallel")
+library("xtable")
 n <- 500
 V <- 5
 M <- 20
@@ -226,10 +227,6 @@ for (mm in seq_len(M)) {
                     Zarea_test <- model.matrix(iForm$random, data = active_test)
                     active_test$area <- c(Xarea_test %*% betas[iForm$indFixed]) + 
                         rowSums(Zarea_test * b_test[, iForm$indRandom])
-                    # create landmark data set
-                    #dataLM <- JMbayes:::dataLM
-                    #DD <- dataLM(active_train, time, respVar = "value", timeVar = "time", 
-                    #             evTimeVar = "EvTime")
                     # Fit Cox models
                     CoxLM1 <- coxph(Surv(EvTime, event) ~ TypeOp + Age + sex + 
                                         value, data = active_train)
@@ -314,9 +311,6 @@ for (mm in seq_len(M)) {
 ##########################################################################################
 ##########################################################################################
 
-library("lattice")
-load(file.path(getwd(), "Results/Application/CV_AUC&PE_vers2.RData"))
-
 out <- do.call("rbind", unlist(Res, recursive = FALSE))
 out <- data.frame(
     "functional_form" = rep(out$`functional form`, 3),
@@ -327,26 +321,6 @@ out <- data.frame(
 )
 out$functional_form <- factor(out$functional_form, 
                               labels = c("value", "value + slope", "cumulative"))
-
-
-rootOut <- file.path(getwd(), "LaTex Files/vers1/Figures")
-pdf(file.path(rootOut, "cvAUC.pdf"), height = 5)
-bwplot(AUC ~ model | time * functional_form, data = out, pch = "|",  
-       col = "lightgrey", as.table = TRUE, layout = c(3, 3), coef = 0,
-       scales = list(y = list(relation = "free", tick.number = 4)),
-       par.settings = list(box.rectangle = list(fill = "lightgrey"),
-                           par.ylab.text = list(cex = 0.9), 
-                           axis.text = list(cex = 0.9)))
-dev.off()
-
-pdf(file.path(rootOut, "cvPE.pdf"), height = 5)
-bwplot(PE ~ model | time * functional_form, data = out, pch = "|",  
-       col = "lightgrey", as.table = TRUE, layout = c(3, 3), coef = 0,
-       scales = list(y = list(relation = "free", tick.number = 4)),
-       par.settings = list(box.rectangle = list(fill = "lightgrey"),
-                           par.ylab.text = list(cex = 0.9), 
-                           axis.text = list(cex = 0.9)))
-dev.off()
 
 AUCs <- round(with(out, tapply(AUC, list(time, model, functional_form), mean, na.rm = TRUE)), 3)
 PEs <- round(with(out, tapply(PE, list(time, model, functional_form), mean, na.rm = TRUE)), 3)
@@ -363,14 +337,7 @@ AoValv_accuracy$JM_PE <- c(t(PEs[, 1,]))
 AoValv_accuracy$LM_PE <- c(t(PEs[, 2,]))
 AoValv_accuracy$LMmixed_PE <- c(t(PEs[, 3,]))
 
-library("xtable")
-
 print(xtable(AoValv_accuracy, label = "Tab:AccMeas", caption = NULL, 
              align = c("l", rep("r", 8)), digits = c(0, 0, 1, rep(3, 6))), 
       math.style.negative = TRUE, sanitize.text.function = function (x) x,
       include.rownames = FALSE)
-
-
-
-
-     
