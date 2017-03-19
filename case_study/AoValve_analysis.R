@@ -12,7 +12,7 @@
 library("JMbayes")
 library("splines")
 
-con <- url("https://raw.github.com/drizopoulos/jm_and_lm/master/case_study/simulated_AoValve.RData")
+con <- url("https://raw.github.com/drizopoulos/jm_and_lm/master/case_study/simulated_AoValv.RData")
 load(con)
 close(con)
 
