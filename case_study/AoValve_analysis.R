@@ -11,6 +11,7 @@
 
 library("JMbayes")
 library("splines")
+library("xtable")
 
 con <- url("https://raw.github.com/drizopoulos/jm_and_lm/master/case_study/simulated_AoValv.RData")
 load(con)
@@ -157,15 +158,15 @@ LMmixed_models_fun <- function (time) {
     # create LM data
     active_data <- AoValv[AoValv$EvTime > time & AoValv$time <= time, ]
     # fit mixed model
-    lmeFit <- lme(sqrt(AoGradient) ~ 0 + TypeOp + TypeOp:bs(time, k = 4, B = c(0, 20.6)), 
+    lmeFit <- lme(sqrt(AoGradient) ~ 0 + TypeOp + TypeOp:ns(time, k = c(2.5, 6), B = c(0.5, 13)), 
                   data = active_data, 
-                  random = list(id = pdDiag(form = ~ bs(time, k = 4, B = c(0, 20.6)))))
+                  random = list(id = pdDiag(form = ~ ns(time, k = c(2.5, 6), B = c(0.5, 13)))))
     betas <- fixef(lmeFit)
     b <- data.matrix(ranef(lmeFit))
     id <- match(active_data$id, unique(active_data$id))
     # calculate fitted values at event item
-    Xvalue <- model.matrix(~ 0 + TypeOp + TypeOp:bs(time, k = 4, B = c(0, 20.6)), data = active_data)
-    Zvalue <- model.matrix(~ bs(time, k = 4, B = c(0, 20.6)), data = active_data)
+    Xvalue <- model.matrix(~ 0 + TypeOp + TypeOp:ns(time, k = c(2.5, 6), B = c(0.5, 13)), data = active_data)
+    Zvalue <- model.matrix(~ ns(time, k = c(2.5, 6), B = c(0.5, 13)), data = active_data)
     active_data$value <- c(Xvalue %*% betas) + rowSums(Zvalue * b[id, ])
     Xslope <- model.matrix(dForm$fixed, data = active_data)
     Zslope <- model.matrix(dForm$random, data = active_data)
