@@ -16,9 +16,6 @@ con <- url("https://raw.github.com/drizopoulos/jm_and_lm/master/case_study/simul
 load(con)
 close(con)
 
-AoValv <- simulated_AoValve
-AoValv.id <- AoValv[!duplicated(AoValv$id), ]
-
 # Joint Modeling
 lmeFit <- lme(sqrt(AoGradient) ~ 0 + TypeOp + TypeOp:ns(time, k = c(2.5, 6), B = c(0.5, 13)), 
               data = AoValv, 
