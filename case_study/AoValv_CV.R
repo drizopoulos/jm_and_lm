@@ -1,19 +1,21 @@
 ##########################################################################################
-# Aim: Read simulation results and produce the figures in the supplementary material     #
-# Input: The user needs to specify the scenario for which the plots are required; options# 
-#        are Ia, Ib, IIa, IIb, IIIa, IIIb. These correspond to Scenarios I, II and II    #
-#        described in the paper, and the suffix 'a' or 'b' denote whether the correct of #
-#        misspecified functional form for the time effect the linear mixed model were    #
-#        used.                                                                           #
+# Aim: Code to run the cross-validation analysis of the Aortic Valve dataset             #
+#                                                                                        #
+# Required packages: development version of JMbayes from GitHub                          #
+#     (https://github.com/drizopoulos/JMbayes), and parallel and xtable from CRAN        #
+#                                                                                        #
+# Note: The code requires considerable amount of time to run (depending also on your     #
+# machine's configuration)                                                               #
+#                                                                                        #
 # Author: Dimitris Rizopoulos                                                            #
 ##########################################################################################
 
 
 library("parallel")
 library("xtable")
-n <- 500
-V <- 5
-M <- 20
+n <- 500 # number of subjects
+V <- 5 # number of folds in the cross-validation
+M <- 20 # number of times to replicate the cross-validation procedure
 Res <- vector("list", M)
 for (mm in seq_len(M)) {
     

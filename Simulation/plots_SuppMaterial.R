@@ -5,6 +5,9 @@
 #        described in the paper, and the suffix 'a' or 'b' denote whether the correct of #
 #        misspecified functional form for the time effect the linear mixed model were    #
 #        used.                                                                           #
+#                                                                                        #
+# Required packages: lattice                                                             #
+#                                                                                        #
 # Author: Dimitris Rizopoulos                                                            #
 ##########################################################################################
 

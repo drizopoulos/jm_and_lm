@@ -1,4 +1,13 @@
+##########################################################################################
+# Aim: Simulates data from simulation Scenrio III                                        #
+#                                                                                        #
+# Required packages: MASS and splines from CRAN                                          #
+#                                                                                        #
+# Author: Dimitris Rizopoulos                                                            #
+##########################################################################################
+
 library("MASS")
+library("splines")
 n <- 1000 # number of subjects
 K <- 15  # number of planned repeated measurements per subject, per outcome
 t.max <- 15 # maximum follow-up time

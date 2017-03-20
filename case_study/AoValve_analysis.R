@@ -1,10 +1,13 @@
 ##########################################################################################
-# Aim: Read simulation results and produce the figures in the supplementary material     #
-# Input: The user needs to specify the scenario for which the plots are required; options# 
-#        are Ia, Ib, IIa, IIb, IIIa, IIIb. These correspond to Scenarios I, II and II    #
-#        described in the paper, and the suffix 'a' or 'b' denote whether the correct of #
-#        misspecified functional form for the time effect the linear mixed model were    #
-#        used.                                                                           #
+# Aim: Code to replicate the analysis of the Aortic Valve dataset, including descriptives#
+# fitting of joint models and landmark models, and producing LaTeX table of results      #
+#                                                                                        #
+# Required packages: development version of JMbayes from GitHub                          #
+#     (https://github.com/drizopoulos/JMbayes), and splines, lattice and xtable from CRAN#
+#                                                                                        #
+# Note: The code requires considerable amount of time to run (depending also on your     #
+# machine's configuration)                                                               #
+#                                                                                        #
 # Author: Dimitris Rizopoulos                                                            #
 ##########################################################################################
 
