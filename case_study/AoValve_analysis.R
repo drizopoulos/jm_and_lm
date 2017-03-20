@@ -12,12 +12,34 @@
 library("JMbayes")
 library("splines")
 library("xtable")
+library("lattice")
 
+# Read simulated data
 con <- url("https://raw.github.com/drizopoulos/jm_and_lm/master/case_study/simulated_AoValv.RData")
 load(con)
 close(con)
 
-# Joint Modeling
+########################
+# Descriptive Analysis #
+########################
+
+KM <- survfit(Surv(EvTime, event) ~ TypeOp, data = AoValv.id)
+KM
+plot(KM, col = 1:2, lwd = 2, mark.time = FALSE, lty = 1:2, xlim = c(-1.5, 21),
+     xlab = "Follow-up Time (years)", ylab = "Re-Operation Free Survival")
+legend("left", levels(AoValv$TypeOp), col = 1:2, lwd = 2, lty = 1:2, bty = "n")
+text(c(-0.1, 5, 10, 15, 20), y = rep(0.15, 5), c("SI: 77", 71, 54, 34, 5))
+text(c(-0.1, 5, 10, 15, 20), y = rep(0.07, 5), c("RR: 208", 176, 88, 13, 0), col = "red")
+
+xyplot(sqrt(AoGradient) ~ time | TypeOp, data = AoValv, groups = id, lty = 1,
+       type = "l", col = 1, xlab = "Follow-up Time (years)", 
+       ylab = expression(sqrt("Aortic Gradient (mmHg)")))
+
+
+##################
+# Joint Modeling #
+##################
+
 lmeFit <- lme(sqrt(AoGradient) ~ 0 + TypeOp + TypeOp:ns(time, k = c(2.5, 6), B = c(0.5, 13)), 
               data = AoValv, 
               random = list(id = pdDiag(form = ~ ns(time, k = c(2.5, 6), B = c(0.5, 13)))))
@@ -38,6 +60,34 @@ iForm <- list(fixed = ~ 0 + TypeOp:time + TypeOp:ins(time, k = c(2.5, 6), B = c(
               indRandom = 1:4)
 jointFit3 <- update(jointFit1, param = "td-extra", extraForm = iForm)
 
+
+##########################################################
+# Comparison of Random Slopes from mixed and joint model #
+##########################################################
+
+lmeFit_slp <- lme(sqrt(AoGradient) ~ TypeOp * time, data = AoValv, random = ~ time | id)
+
+# current value
+jointFit_slp <- jointModelBayes(lmeFit_slp, survFit, timeVar = "time", n.iter = 100000L)
+
+DF <- data.frame("joint_model" = ranef(jointFit_slp)[, 2], 
+                 "mixed_model" = ranef(lmeFit_slp)[, 2],
+                 "event" = AoValv.id$event)
+DF <- rbind(DF, DF[DF$event == 0, ], DF[DF$event == 1, ])
+DF$eventf <- factor(rep(1:3, c(nrow(AoValv.id), sum(AoValv.id$event == 0), 
+                               sum(AoValv.id$event == 1))), 
+                    levels = 1:3, labels = c("all", "alive", "dead"))
+
+DF <- data.frame("joint_model" = ranef(jointFit)[, 2], 
+                 "mixed_model" = ranef(lmeFit)[, 2],
+                 "event" = AoValv.id$event)
+DF <- rbind(DF, DF[DF$event == 0, ], DF[DF$event == 1, ])
+DF$eventf <- factor(rep(1:3, c(nrow(AoValv.id), sum(AoValv.id$event == 0), 
+                               sum(AoValv.id$event == 1))), 
+                    levels = 1:3, labels = c("all", "alive", "dead"))
+
+xyplot(joint_model ~ mixed_model | eventf, data = DF, abline = list(a = 0, b = 1),
+       xlab = "Random Slopes from Mixed Model", ylab = "Random Slopes from Joint Model")
 
 ###################
 # Extract Results #
@@ -63,27 +113,30 @@ dY <- data.frame(
     Value = c(jointFit3$postMeans$betas, jointFit3$postMeans$sigma), 
     "95\\% CI" = c(fCI(jointFit3$CI$betas), fCI(jointFit3$CI$sigma)),
     check.names = FALSE)
-row.names(dY) <- c(head(gsub("ns(time, k = c(2.5, 6), B = c(0.5, 13))", "B-spln", row.names(dY), fixed = TRUE), -1), "$\\sigma$")
+row.names(dY) <- c(head(gsub("ns(time, k = c(2.5, 6), B = c(0.5, 13))", "B-spln", 
+                             row.names(dY), fixed = TRUE), -1), "$\\sigma$")
 
-print(xtable(dY, label = "Tab:Res-Y", 
-             caption = "Estimated coefficients and 95\\% credibility intervals for the parameters of the longitudinal submodels.",
-             align = c("l", rep("r", 6))), 
+cap <- paste("Estimated coefficients and 95\\% credibility intervals for the",
+             "parameters of the longitudinal submodels.")
+print(xtable(dY, label = "Tab:Res-Y", caption = cap, align = c("l", rep("r", 6))), 
       math.style.negative = TRUE, sanitize.text.function = function (x) x)
 
 dT <- data.frame(
     Value = c(jointFit1$postMeans$gammas, jointFit1$postMeans$alphas, NA), 
     "95\\% CI" = c(fCI(jointFit1$CI$gammas), fCI(jointFit1$CI$alphas), NA),
     #
-    Value = c(jointFit2$postMeans$gammas, jointFit2$postMeans$alphas, jointFit2$postMeans$Dalphas), 
-    "95\\% CI" = c(fCI(jointFit2$CI$gammas), fCI(jointFit2$CI$alphas), fCI(jointFit2$CI$Dalphas)),
+    Value = c(jointFit2$postMeans$gammas, jointFit2$postMeans$alphas, 
+              jointFit2$postMeans$Dalphas), 
+    "95\\% CI" = c(fCI(jointFit2$CI$gammas), fCI(jointFit2$CI$alphas), 
+                   fCI(jointFit2$CI$Dalphas)),
     #
     Value = c(jointFit3$postMeans$gammas, jointFit3$postMeans$Dalphas, NA), 
     "95\\% CI" = c(fCI(jointFit3$CI$gammas), fCI(jointFit3$CI$Dalphas), NA),
     check.names = FALSE)
 
-print(xtable(dT, label = "Tab:Res-T", 
-             caption = "Estimated coefficients and 95\\% credibility intervals for the parameters of the survival submodels.",
-             align = c("l", rep("r", 6))), 
+cap <- paste("Estimated coefficients and 95\\% credibility intervals for the", 
+             "parameters of the survival submodels.")
+print(xtable(dT, label = "Tab:Res-T", caption = cap, align = c("l", rep("r", 6))), 
       math.style.negative = TRUE, sanitize.text.function = function (x) x)
 
 
@@ -91,7 +144,9 @@ print(xtable(dT, label = "Tab:Res-T",
 ##########################################################################################
 ##########################################################################################
 
-# Standard Landmarking
+########################
+# Standard Landmarking #
+########################
 
 dataLM <- JMbayes:::dataLM
 
@@ -150,7 +205,9 @@ print(xtable(dT, label = "Tab:Res-LM", caption = cap, align = c("l", rep("r", 7)
 ##########################################################################################
 ##########################################################################################
 
-# Mixed Model Landmarking
+###########################
+# Mixed Model Landmarking #
+###########################
 
 dataLM <- JMbayes:::dataLM
 
@@ -158,14 +215,16 @@ LMmixed_models_fun <- function (time) {
     # create LM data
     active_data <- AoValv[AoValv$EvTime > time & AoValv$time <= time, ]
     # fit mixed model
-    lmeFit <- lme(sqrt(AoGradient) ~ 0 + TypeOp + TypeOp:ns(time, k = c(2.5, 6), B = c(0.5, 13)), 
+    lmeFit <- lme(sqrt(AoGradient) ~ 0 + TypeOp + 
+                      TypeOp:ns(time, k = c(2.5, 6), B = c(0.5, 13)), 
                   data = active_data, 
                   random = list(id = pdDiag(form = ~ ns(time, k = c(2.5, 6), B = c(0.5, 13)))))
     betas <- fixef(lmeFit)
     b <- data.matrix(ranef(lmeFit))
     id <- match(active_data$id, unique(active_data$id))
     # calculate fitted values at event item
-    Xvalue <- model.matrix(~ 0 + TypeOp + TypeOp:ns(time, k = c(2.5, 6), B = c(0.5, 13)), data = active_data)
+    Xvalue <- model.matrix(~ 0 + TypeOp + TypeOp:ns(time, k = c(2.5, 6), B = c(0.5, 13)), 
+                           data = active_data)
     Zvalue <- model.matrix(~ ns(time, k = c(2.5, 6), B = c(0.5, 13)), data = active_data)
     active_data$value <- c(Xvalue %*% betas) + rowSums(Zvalue * b[id, ])
     Xslope <- model.matrix(dForm$fixed, data = active_data)
