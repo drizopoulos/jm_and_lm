@@ -141,48 +141,12 @@ train_data$id <- match(train_data$id, unique(train_data$id))
 test_data <- dat[dat$id %in% set, ]
 test_data$id <- match(test_data$id, unique(test_data$id))
 
+trueValues <- list(betas = betas, phi = phi, gammas = gammas, alpha = alpha,
+                   b_test = b[sort(set), ], Bkn = Bkn, kn = kn)
 
 # delete all unused objects
 rm(y, X, Z, id, n, na.ind, long.na.ind, ind, Ctimes, Time, event, W,
    betas, sigma.y, gammas, alpha, eta.t, eta.y, phi, t.max,
    trueTimes, u, Root, invS, D, b, K, set, dat,
    times, group, i, tries, Up, Bkn, kn, DF, meanCens0, meanCens1)
-
-
-calculate_REs <- function (lmeObject, newdata) {
-    data <- lmeObject$data
-    formYx <- formula(lmeObject)
-    mfX <- model.frame(terms(formYx), data = data)
-    TermsX <- attr(mfX, "terms")
-    mfX_new <- model.frame(TermsX, data = newdata)
-    X_new <- model.matrix(formYx, mfX_new)
-    formYz <- formula(lmeObject$modelStruct$reStruct[[1]])
-    mfZ <- model.frame(terms(formYz), data = data)
-    TermsZ <- attr(mfZ, "terms")
-    mfZ_new <- model.frame(TermsZ, data = newdata)
-    Z_new <- model.matrix(formYz, mfZ_new)
-    y_new <- model.response(mfX_new, "numeric")
-    idVar <- names(lmeObject$modelStruct$reStruct)
-    if (length(idVar) > 1)
-        stop("the current version of the function only works with a single grouping variable.\n")
-    if (is.null(newdata[[idVar]]))
-        stop("subject id variable not in newdata.")
-    id <- match(newdata[[idVar]], unique(newdata[[idVar]]))
-    n <- length(unique(id))
-    betas <- fixef(lmeObject)
-    D <- lapply(pdMatrix(lmeObject$modelStruct$reStruct), "*",
-                lmeObject$sigma^2)[[1]]
-    modes <- matrix(0.0, n, ncol(Z_new))
-    for (i in seq_len(n)) {
-        id_i <- id == i
-        X_new_id <- X_new[id_i, , drop = FALSE]
-        Z_new_id <- Z_new[id_i, , drop = FALSE]
-        Vi_inv <- solve(Z_new_id %*% tcrossprod(D, Z_new_id) + 
-                            lmeObject$sigma^2 * diag(sum(id_i)))
-        DZtVinv <- tcrossprod(D, Z_new_id) %*% Vi_inv
-        modes[i, ] <- c(DZtVinv %*% (y_new[id_i] - X_new_id %*% betas))
-    }
-    modes
-}
-
 
