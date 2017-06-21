@@ -1,6 +1,7 @@
 ##########################################################################################
 # Aim: Code to replicate the analysis of the Aortic Valve dataset, including descriptives#
 # fitting of joint models and landmark models, and producing LaTeX table of results      #
+# (Tables 1-3 supplementary material)                                                    #
 #                                                                                        #
 # Required packages: development version of JMbayes from GitHub                          #
 #     (https://github.com/drizopoulos/JMbayes), and splines, lattice and xtable from CRAN#
@@ -18,7 +19,7 @@ library("xtable")
 library("lattice")
 
 # Read simulated data
-con <- url("https://raw.github.com/drizopoulos/jm_and_lm/master/case_study/simulated_AoValv.RData")
+con <- url("https://raw.github.com/drizopoulos/jm_and_lm/master/case_study/simulated_AoValve.RData")
 load(con)
 close(con)
 
@@ -96,7 +97,7 @@ xyplot(joint_model ~ mixed_model | eventf, data = DF, abline = list(a = 0, b = 1
 # Extract Results #
 ###################
 
-# Longitudinal Process
+# Longitudinal Process - Table 1 Supplementary material
 
 fCI <- function (x) {
     g <- function (y) {
@@ -123,6 +124,8 @@ cap <- paste("Estimated coefficients and 95\\% credibility intervals for the",
              "parameters of the longitudinal submodels.")
 print(xtable(dY, label = "Tab:Res-Y", caption = cap, align = c("l", rep("r", 6))), 
       math.style.negative = TRUE, sanitize.text.function = function (x) x)
+
+# Survival Process - Table 2 Supplementary material
 
 dT <- data.frame(
     Value = c(jointFit1$postMeans$gammas, jointFit1$postMeans$alphas, NA), 
@@ -173,6 +176,8 @@ LM_models_fun <- function (time) {
 ###################
 # Extract Results #
 ###################
+
+# Table 3 Supplementary material top part
 
 extract_coefs <- function (time) {
     models <- LM_models_fun(time)
@@ -254,6 +259,8 @@ LMmixed_models_fun <- function (time) {
 ###################
 # Extract Results #
 ###################
+
+# Table 3 Supplementary material bottom part
 
 extract_coefs <- function (time) {
     models <- LMmixed_models_fun(time)$models

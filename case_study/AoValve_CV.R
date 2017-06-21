@@ -1,5 +1,5 @@
 ##########################################################################################
-# Aim: Code to run the cross-validation analysis of the Aortic Valve dataset             #
+# Aim: Code to run the cross-validation analysis of the Aortic Valve dataset (Table 1)   #
 #                                                                                        #
 # Required packages: development version of JMbayes from GitHub                          #
 #     (https://github.com/drizopoulos/JMbayes), and parallel and xtable from CRAN        #
@@ -338,6 +338,8 @@ AoValv_accuracy$LMmixed_AUC <- c(t(AUCs[, 3,]))
 AoValv_accuracy$JM_PE <- c(t(PEs[, 1,]))
 AoValv_accuracy$LM_PE <- c(t(PEs[, 2,]))
 AoValv_accuracy$LMmixed_PE <- c(t(PEs[, 3,]))
+
+# Table 1 main paper
 
 print(xtable(AoValv_accuracy, label = "Tab:AccMeas", caption = NULL, 
              align = c("l", rep("r", 8)), digits = c(0, 0, 1, rep(3, 6))), 

@@ -81,14 +81,14 @@ plot_fun <- function (scenario, diff = TRUE) {
 
 ##########################################################################################
 
-plots <- plot_fun("Ia")
-plots$AUC
-plots$PE
-
-plots$mean_AUC
-plots$mean_PE
-
-
+# Figures 2 - 13 Supplementary Material
+scenarios <- paste0(rep(c("I", "II", "III"), each = 2), c("a", "b"))
+for (sc in scenarios) {
+    plots <- plot_fun(sc)
+    print(plots$AUC)
+    ##
+    print(plots$PE)
+}
 
 
 
