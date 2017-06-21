@@ -15,11 +15,11 @@ design as the Aortic Valve dataset presented in the paper.
 - `AoValve_analysis.R` an R script file that 
     + loads the simulated Aortic Valve dataset, and
     + does all analysis presented in Section 4 of the paper and Section 1 of the 
-    supplementary material in this simulated data sets, producing the corresponding tables
+    supplementary material in this simulated dataset, producing the corresponding tables
     and figures (namely, Figures 2-3 in the main paper, and Table 1-3 in the 
     supplementary material).
 
-- `AoValve_CV.R` an R script file that does produces the cross-validates AUC and PE 
+- `AoValve_CV.R` an R script file that produces the cross-validated AUC and PE 
 measures in the simulated data set (Table 1 of main paper).
 
 The folder `Simulation` has the following contents:
